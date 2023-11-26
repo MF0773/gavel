@@ -1,6 +1,6 @@
 # Matplotlib imports.
 from matplotlib import pyplot as plt
-import matplotlib; matplotlib.font_manager._rebuild()
+import matplotlib#; matplotlib.font_manager._rebuild()
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
@@ -10,7 +10,7 @@ import seaborn as sns
 from matplotlib import rc
 sns.set_style('ticks')
 font = {
-    'font.family':'Roboto',
+#     'font.family':'Roboto',
     'font.size': 12,
 }
 sns.set_style(font)
@@ -70,7 +70,7 @@ def plot_metric_vs_inverse_lambda(logfile_paths,
 
     sns.lineplot(x='input_job_rate', y='metric', style='policy',
                  hue='policy',
-                 data=data, ci='sd',
+                 data=data, errorbar='sd',
                  markers=True)
 
     ax.set_xlabel("Input job rate (jobs/hr)")
@@ -79,12 +79,24 @@ def plot_metric_vs_inverse_lambda(logfile_paths,
     ax.set_ylim([0, ymax])
     sns.despine()
     
+    # leg = plt.legend(loc='upper left', frameon=False)
+    # bb = leg.get_bbox_to_anchor().inverse_transformed(ax.transAxes)
+    # bb.y0 += 0.22
+    # bb.y1 += 0.22
+    # leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
+    # Get the legend bounding box and transform it to Axes coordinates
+    
     leg = plt.legend(loc='upper left', frameon=False)
-    bb = leg.get_bbox_to_anchor().inverse_transformed(ax.transAxes)
-    bb.y0 += 0.22
-    bb.y1 += 0.22
-    leg.set_bbox_to_anchor(bb, transform=ax.transAxes)
+    
+    bb = leg.get_bbox_to_anchor()
+    bb_transformed = bb.transformed(ax.transAxes.inverted())
 
+    # Adjust the y-coordinates of the bounding box
+    bb_transformed.y0 += 0.22
+    bb_transformed.y1 += 0.22
+
+    # Set the adjusted bounding box to the legend
+    leg.set_bbox_to_anchor(bb_transformed, transform=ax.transAxes)
     if output_filename is not None:
         with PdfPages(output_filename) as pdf:
             pdf.savefig(bbox_inches='tight')
